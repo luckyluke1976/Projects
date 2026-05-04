@@ -43,7 +43,7 @@ All data stays local by default. External APIs are only called for specific thre
 | `playbook <scenario> <phase>` | IR Playbook — single phase | No |
 | `log? <code>` | Log Code Reference | No |
 | `logref <category>` | Log Code by category | No |
-| `acl <rule>` | Firewall/ACL Generator | No |
+| `acl <rule>` | Firewall / ACL Generator | No |
 | `ip <address>` | OSINT IP Lookup | ip-api.com + AbuseIPDB |
 
 ---
@@ -92,14 +92,6 @@ The glasses app is the display layer only. All logic lives in the SOC server.
 
 ---
 
-## Server Dependency
-
-This app requires the **CyberLens SOC Server** running locally:
-
-> [github.com/luckyluke1976/cyberlens-soc-server](https://github.com/luckyluke1976/cyberlens-soc-server)
-
----
-
 ## Privacy & Design Philosophy
 
 - **Local-first**: no data leaves your machine unless you explicitly run an OSINT command
@@ -124,6 +116,7 @@ This app requires the **CyberLens SOC Server** running locally:
 | Log Code Reference | Working |
 | Firewall / ACL Generator | Working |
 | OSINT IP Lookup | Working |
+| Hash Lookup | Working |
 | Tips — live interview coach | Built, end-to-end test pending |
 | Wake word "Veronica" | Planned |
 | iPhone / LAN test page | Planned |
