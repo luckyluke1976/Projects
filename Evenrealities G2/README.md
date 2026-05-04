@@ -18,7 +18,7 @@ This is part of a larger portfolio project by a cybersecurity student targeting 
 ```
 [Voice Command or Ring Input]
         ↓
-[Even Hub SDK — TypeScript/Vite app]
+[Even Hub SDK — TypeScript / Vite app]
         ↓
 [Local Node.js Server — localhost:3000]
         ↓
@@ -26,33 +26,34 @@ This is part of a larger portfolio project by a cybersecurity student targeting 
 ```
 
 The app connects to the G2 glasses via the **Even Realities Even Hub SDK**.  
-All data stays local by default. External APIs (VirusTotal, AbuseIPDB) are only called for specific modules.
+All data stays local by default. External APIs are only called for specific threat-intel modules.
 
 ---
 
 ## Features
 
-| Voice Trigger | What It Does |
-|---|---|
-| `porta <number>` | Port lookup — service name, protocol, notes |
-| `cve <code>` | CVE details via Claude AI |
-| `subnet <ip/cidr>` | Subnet calculator — network, broadcast, hosts |
-| `cheat <tool>` | Quick cheat sheet for nmap, wireshark, etc. |
-| `trouble <scenario>` | Guided troubleshooting — 6 scenarios |
-| `playbook <scenario>` | IR Playbook — 12 NIST SP 800-61 scenarios |
-| `log? <code>` | Windows/Linux log code reference |
-| `acl <rule>` | Firewall/ACL generator (iptables + PowerShell) |
-| `ip <address>` | OSINT IP lookup — geo, ISP, abuse score |
-| `apri poker` | Poker GTO advisor (home games only) |
+| Voice Trigger | Module | External API? |
+|---|---|---|
+| `porta <number>` | Port Lookup | No |
+| `cve <code>` | CVE Details | Claude AI |
+| `subnet <ip/cidr>` | Subnet Calculator | No |
+| `cheat <tool>` | Cheat Sheet | No |
+| `trouble <scenario>` | Troubleshooting Guide | No |
+| `playbook <scenario>` | IR Playbook (NIST SP 800-61) | No |
+| `playbook <scenario> <phase>` | IR Playbook — single phase | No |
+| `log? <code>` | Log Code Reference | No |
+| `logref <category>` | Log Code by category | No |
+| `acl <rule>` | Firewall/ACL Generator | No |
+| `ip <address>` | OSINT IP Lookup | ip-api.com + AbuseIPDB |
 
 ---
 
 ## Display Constraints
 
-The G2 display is a waveguide — not a full screen.  
-Every response is formatted to fit these hard limits:
+The G2 uses a waveguide display — not a standard screen.  
+Every server response is formatted before it reaches the glasses:
 
-- **56 characters per line** (hard limit)
+- **56 characters per line** — hard limit
 - **10–12 lines maximum** per screen
 - **ASCII only** — Unicode symbols render as `?` on the G2 bitmap font
 
@@ -64,11 +65,11 @@ The app is controlled with the **companion ring device**:
 
 | Ring Action | Result |
 |---|---|
-| Scroll | Navigate through lines |
-| Click | Select / confirm |
-| Double-click | Go back / home |
+| Scroll | Move through lines |
+| Single click | Select / confirm |
+| Double-click | Go back / home screen |
 
-The home screen is split into 4 categories: **TRIAGE / INVESTIGATE / RESPOND / REFERENCE**
+Home screen is split into 4 categories: **TRIAGE / INVESTIGATE / RESPOND / REFERENCE**
 
 ---
 
@@ -77,9 +78,9 @@ The home screen is split into 4 categories: **TRIAGE / INVESTIGATE / RESPOND / R
 ```
 cyberlens-g2/
 ├── src/
-│   ├── main.ts          # Entry point, SDK init
-│   ├── display.ts       # G2 display formatter
-│   └── commands.ts      # Voice command parser
+│   ├── main.ts          # Entry point, Even Hub SDK init
+│   ├── display.ts       # G2 formatter (56 char wrap, ASCII)
+│   └── commands.ts      # Voice command parser + router
 ├── vite.config.ts
 ├── package.json
 └── .env                 # VITE_SERVER_URL=http://localhost:3000
@@ -87,41 +88,58 @@ cyberlens-g2/
 
 **Stack:** TypeScript · Vite · Even Realities Even Hub SDK
 
+The glasses app is the display layer only. All logic lives in the SOC server.
+
 ---
 
 ## Server Dependency
 
 This app requires the **CyberLens SOC Server** running locally:
 
-```
-https://github.com/luckyluke1976/cyberlens-soc-server
-```
-
-The server handles all heavy lifting — lookups, AI queries, playbooks.  
-The glasses app is just the display layer.
+> [github.com/luckyluke1976/cyberlens-soc-server](https://github.com/luckyluke1976/cyberlens-soc-server)
 
 ---
 
 ## Privacy & Design Philosophy
 
-- **Local-first**: no data leaves your network unless you explicitly call an external API
-- **CIA Triad as foundation**: every design decision considers Confidentiality, Integrity, Availability
-- Static lookups (ports, cheat sheets, subnets, playbooks) make **zero external calls**
-- Claude AI is called only for CVE queries, open-ended questions, and coaching features
+- **Local-first**: no data leaves your machine unless you explicitly run an OSINT command
+- **CIA Triad as foundation**: every design decision evaluated against Confidentiality, Integrity, Availability
+- Static lookups (ports, cheat sheets, subnets, playbooks, log codes) make **zero external calls**
+- Claude AI is called only for CVE queries and open-ended questions
+- Session logs are stored in RAM with a 24h TTL — nothing written to disk by default
 
 ---
 
-## Status
+## Module Status
 
 | Module | Status |
 |---|---|
-| Home screen + ring nav | Working |
-| Port / Cheat / Subnet | Working |
+| Home screen + ring navigation | Working |
+| Port Lookup | Working |
 | CVE Lookup | Working |
-| IR Playbooks | Working |
-| OSINT IP | Working |
-| Tips (live interview coach) | Built, testing pending |
+| Subnet Calculator | Working |
+| Cheat Sheet | Working |
+| Troubleshooting Guide | Working |
+| IR Playbooks (x12 NIST scenarios) | Working |
+| Log Code Reference | Working |
+| Firewall / ACL Generator | Working |
+| OSINT IP Lookup | Working |
+| Tips — live interview coach | Built, end-to-end test pending |
 | Wake word "Veronica" | Planned |
+| iPhone / LAN test page | Planned |
+
+---
+
+## Tips Module — Interview Coach
+
+The Tips module captures spoken conversation in real time and displays relevant IT/security concept definitions directly on the G2 display.  
+Designed for technical interviews and study sessions.
+
+**LIVE mode** — G2 microphone → Soniox API with speaker diarization. Your voice is enrolled and filtered out; only the interviewer's speech is transcribed.
+
+**REMOTE mode** — PC audio loopback → Faster-Whisper tiny int8, fully local, zero external calls.
+
+Concepts stack newest-first, ring scrolls, auto-reset every 24h, duplicates ignored.
 
 ---
 
